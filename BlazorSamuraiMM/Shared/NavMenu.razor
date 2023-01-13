@@ -1,0 +1,111 @@
+﻿@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject ILogin logout
+@inject NavigationManager navManager
+
+@*Hvis man ikke er logget ind, gem*@
+@if (UserSession == "1")
+{
+    <div class="top-row ps-3 navbar navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="welcome">Samurai Database</a>
+            <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+
+    </div>
+
+    <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+        <nav class="flex-column">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="welcome" Match="NavLinkMatch.All">
+                    <span class="oi oi-home" aria-hidden="true"></span> Home
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="samurai">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Samurai
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="horse">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Horse
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="clan">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Clan
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="quote">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Quote
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="blade">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Blade
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="battle">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Battle
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="battleschema">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> BATTLE SCHEMA
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <button @onclick="LogOut" class="logOutButton">Log out</button>
+            </div>
+        </nav>
+    </div>
+}
+
+@code {
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    //opretter variabler
+    private bool collapseNavMenu = true;
+    private string UserSession;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    //// <summary>
+    /// Vores logud button metode
+    /// </summary>
+    public async void LogOut()
+    {
+        //opretter en model
+        LoginModel loginModel = new();
+
+        //tilføj local storage til model
+        loginModel.Email = await localStorage.GetItemAsync<string>("Email");
+        loginModel.Password = await localStorage.GetItemAsync<string>("Password");
+
+        //kør metode for at logge ud
+        logout.UserLogOut(loginModel);
+
+        //clear cache
+        localStorage.ClearAsync();
+
+        //skift vindue
+        navManager.NavigateTo("/");
+    }
+
+    /// <summary>
+    /// efter render er kørt. tjek for om man er logget ind. Det for at gemme nav menuerne
+    /// </summary>
+    /// <param name="firstRender"></param>
+    /// <returns></returns>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        //gem session i variable
+        UserSession = await localStorage.GetItemAsync<string>("UserSession");
+        StateHasChanged();
+    }
+}

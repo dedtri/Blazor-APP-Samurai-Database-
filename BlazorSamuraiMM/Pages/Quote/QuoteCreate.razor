@@ -1,0 +1,92 @@
+﻿@page "/quoteCreate"
+@inject IQuotes quote
+@inject ISamurai samurai
+@inject NavigationManager NavManager
+
+<div class="topSection">
+    <h3>Create a quote</h3>
+    <button @onclick="Back">Back</button>
+</div>
+
+<EditForm Model="@quoteModel" OnValidSubmit="CreateQuote">
+    @*For at vores beskreder fra vores validering kan vises*@
+    <div class="errorBox">
+        <ValidationSummary />
+        @*For at vores validering på modelleren kan bruges skal vi tilføje følgende*@
+        <DataAnnotationsValidator />
+    </div>
+    <div class="row">
+        <div class="">
+            <label>Quote text</label>
+            <input class="form-control" @bind="quoteModel.QuoteText" />
+            <label>Choose Samurai: </label>
+            @if (samuraiList.Count > 0)
+            {
+                <div>
+                    <InputSelect @bind-Value="quoteModel.SamuraiID" id="categorySelect">
+                        @foreach (var item in samuraiList)
+                        {
+                            <option value="@item.ID">@item.FirstName @item.LastName</option>
+                        }
+                    </InputSelect>
+                </div>
+            }
+        </div>
+
+        <div class="formButton">
+            <button type="submit">Confirm</button>
+        </div>
+    </div>
+
+
+</EditForm>
+
+
+@code {
+    //istansiere vores List
+    List<SamuraiModel> samuraiList = new();
+    QuoteModel quoteModel = new();
+
+    /// <summary>
+    /// overrider er så vi overskriver dataen hver gang
+    /// gør klar til udprint
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        //indsæt
+        samuraiList = samurai.ReadAllAliveSamurais();
+    }
+    /// <summary>
+    /// vores tilbage knap
+    /// </summary>
+    private void Back()
+    {
+        //skift vindue
+        NavManager.NavigateTo("/quote");
+    }
+  
+    /// <summary>
+    /// laver vores indsæt metode
+    /// </summary>
+    private void CreateQuote()
+    {
+        try
+        {
+            //kør metode
+            quote.InsertQuote(quoteModel);
+            //skift vindue
+            NavManager.NavigateTo("quote");
+        }
+        catch
+        {
+            //bygger vores navigateTo ordenligt op
+            string infostring = $"{(quoteModel.SamuraiID).ToString()} is not an existent Samurai ID";
+            string currentModel = "Quote Model";
+            string CurrentId = " ";
+            string url = "quoteCreate";
+
+            //skift vindue
+            NavManager.NavigateTo($"/errorIDPage/{url}/{CurrentId}/{currentModel}/{infostring}");
+        }
+    }
+}

@@ -1,0 +1,97 @@
+﻿@page "/samuraiUpdate/{CurrentId}"
+@inject ISamurai samurai
+@inject IClan clan
+@inject NavigationManager NavManager
+
+<div class="topSection">
+    <h3>Update samurai</h3>
+    <button @onclick="Back">Back</button>
+</div>
+
+<EditForm Model="@samuraiModel" OnValidSubmit="UpdateSamurai">
+    @*For at vores beskreder fra vores validering kan vises*@
+    <div class="errorBox">
+        <ValidationSummary />
+        @*For at vores validering på modelleren kan bruges skal vi tilføje følgende*@
+        <DataAnnotationsValidator />
+    </div>
+    <div class="row">
+        <div class="">
+            <label>First name:</label>
+            <input class="form-control" @bind="samuraiModel.FirstName" />
+            <label>Last name:</label>
+            <input class="form-control" @bind="samuraiModel.LastName" />
+            <label>Birthdate:</label>
+            <input class="form-control" @bind="samuraiModel.Birthdate" />
+            <label>Choose a clan:</label>
+            @if (clanAlive.Count() > 0)
+            {
+                <div>
+                    <InputSelect @bind-Value="samuraiModel.ClanID" id="categorySelect">
+                        @foreach (var item in clanAlive)
+                        {
+                            @if (item.Deleted != 2)
+                            {
+                                <option value="@item.ID">@item.ClanName</option>
+                            }
+                        }
+                    </InputSelect>
+                </div>
+            }
+        </div>
+
+
+        <div class="formButton">
+            <button type="submit">Confirm</button>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    //parameter gør at vi kan hente dataen ned fra url som bliver parset med
+    [Parameter]
+    public string CurrentId { get; set; }
+
+    //istansiere vores model
+    SamuraiModel samuraiModel = new();
+    public List<ClanModel> clanAlive = new();
+
+    /// <summary>
+    /// overrider er så vi overskriver dataen hver gang
+    /// gør klar til udprint
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        //indsæt
+        samuraiModel = samurai.ReadOneSamurai(Convert.ToInt32(CurrentId));
+        clanAlive = clan.ReadAllAliveClan();
+    }
+
+    private void Back()
+    {
+        //skift vindue
+        NavManager.NavigateTo("/samurai");
+    }
+
+    private void UpdateSamurai()
+    {
+        try
+        {
+            //kør metode
+            samurai.UpdateSamurai(samuraiModel);
+            //skift vindue
+            NavManager.NavigateTo("samurai");
+        }
+        catch
+        {
+            //bygger vores navigateTo ordenligt op
+            string infostring = $"{(samuraiModel.ClanID).ToString()} is out of range.";
+            string currentModel = "Samurai Model";
+            string CurrentId = " ";
+            string url = "samuraiUpdate";
+
+            //skift vindue
+            NavManager.NavigateTo($"/errorIDPage/{url}/{CurrentId}/{currentModel}/{infostring}");
+        }
+    }
+}

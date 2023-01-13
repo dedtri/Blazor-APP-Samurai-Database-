@@ -1,0 +1,141 @@
+﻿@page "/samurai"
+@inject ISamurai samurai
+@inject NavigationManager NavManager
+
+<div class="topSection">
+    <h3>List of samurais</h3>
+    <button @onclick="CreateSamurai">Add samurai</button>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <td>First name</td>
+            <td>Last name</td>
+            <td>Birthdate</td>
+            <td>Functions</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var samurai in samuraiList)
+        {
+            <tr>
+                @if (samurai.Deleted == 1)
+                {
+                    <td>@samurai.FirstName</td>
+                    <td>@samurai.LastName</td>
+                    <td>@samurai.Birthdate.Year</td>
+                    <td>
+                        <button><a href="samuraiUpdate/@samurai.ID">Update</a></button> |
+                        <button @onclick="()=>SamuraiDelete(samurai)">Delete</button>
+                    </td>
+                }
+            </tr>
+
+        }
+
+    </tbody>
+</table>
+
+<div class="bottomSection">
+    Slå op om en samurai har en hest (ved ID):
+    <input type="text" @bind="SearchId" />
+    <button @onclick="Search">Search</button>
+</div>
+
+@if (IDResult != null)
+{
+    @if (IDResult.Deleted != 2)
+    {
+        <table>
+            <thead>
+                <tr>
+
+                    <td>FirstName</td>
+                    <td>LastName</td>
+                    <td>Birthdate</td>
+                    @if (IDResult.Horse != null)
+                    {
+                        <td>Horse name</td>
+                    }
+
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>@IDResult.FirstName</td>
+                    <td>@IDResult.LastName</td>
+                    <td>@IDResult.Birthdate.Year</td>
+                    @if (IDResult.Horse != null)
+                    {
+                        <td>@IDResult.Horse.Name</td>
+                    }
+                </tr>
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    //istansiere vores List
+    List<SamuraiModel> samuraiList = new();
+    int SearchId;
+    SamuraiModel IDResult;
+    List<SamuraiModel> NameResult = new();
+    int session;
+
+    /// <summary>
+    /// overrider er så vi overskriver dataen hver gang
+    /// gør klar til udprint
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        //indsæt
+        samuraiList = samurai.ReadAllSamurais();
+    }
+
+    /// <summary>
+    /// vores knap til at komme hen for at indsætte i tabel
+    /// </summary>
+    private void CreateSamurai()
+    {
+        //skift vindue
+        NavManager.NavigateTo("/SamuraiCreate");
+    }
+
+    /// <summary>
+    /// vores knap til at slette
+    /// </summary>
+    /// <param name="samuraiModel"></param>
+    private void SamuraiDelete(SamuraiModel samuraiModel)
+    {
+        //kør metode
+        samurai.DeleteSamurai(samuraiModel.ID);
+        //refresh side
+        NavManager.NavigateTo(" ");
+        NavManager.NavigateTo("/samurai");
+    }
+
+    /// <summary>
+    /// Vores search function
+    /// </summary>
+    private void Search()
+    {
+        try
+        {
+            IDResult = samurai.ReadAliveSamuraisHouse(SearchId);
+        }
+        catch
+        {
+            try
+            {
+                IDResult = samurai.ReadOneAliveSamurai(SearchId);
+            }
+            catch
+            {
+                IDResult = null;
+            }
+        }
+    }
+
+}

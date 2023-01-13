@@ -1,0 +1,93 @@
+﻿@page "/horseUpdate/{CurrentId}"
+@inject IHorse horse
+@inject ISamurai samurai
+@inject NavigationManager NavManager
+
+<div class="topSection">
+    <h3>Update a horse</h3>
+    <button @onclick="Back">Back</button>
+</div>
+
+<EditForm Model="@horseModel" OnValidSubmit="UpdateHorse">
+    @*For at vores beskreder fra vores validering kan vises*@
+    <div class="errorBox">
+        <ValidationSummary />
+        @*For at vores validering på modelleren kan bruges skal vi tilføje følgende*@
+        <DataAnnotationsValidator />
+    </div>
+    <div class="row">
+        <div class="">
+            <label>Horse name:</label>
+            <input class="form-control" @bind="horseModel.Name" />
+            <label>Horse race:</label>
+            <input class="form-control" @bind="horseModel.HorseRace" />
+            <label>Choose Samurai: </label>
+            @if (samuraiList.Count() > 0)
+            {
+                <div>
+                    <InputSelect @bind-Value="horseModel.SamuraiID" id="categorySelect">
+                        @foreach (var item in samuraiList)
+                        {
+                            <option value="@item.ID">@item.FirstName @item.LastName</option>
+                        }
+                    </InputSelect>
+                </div>
+            }
+        </div>
+
+        <div class="formButton">
+            <button type="submit">Confirm</button>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    //parameter gør at vi kan hente dataen ned fra url som bliver parset med
+    [Parameter]
+    public string? CurrentId { get; set; }
+
+    //istansiere model
+    HorseModel horseModel = new();
+    List<SamuraiModel> samuraiList = new();
+
+    /// <summary>
+    /// overrider er så vi overskriver dataen hver gang
+    /// gør klar til udprint
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        //indsætter
+        horseModel = horse.ReadOneHorse(Convert.ToInt32(CurrentId));
+        samuraiList = samurai.ReadAllAliveSamurais();
+    }
+
+    private void Back()
+    {
+        //skift vindue
+        NavManager.NavigateTo("/horse");
+    }
+
+    /// <summary>
+    /// vores update metode
+    /// </summary>
+    private void UpdateHorse()
+    {
+        try
+        {
+            //kør metode
+            horse.UpdateHorse(horseModel, Convert.ToInt32(CurrentId));
+            //skift vindue
+            NavManager.NavigateTo("horse");
+        }
+        catch
+        {
+            //gør vores navigateTo klar
+            string infostring = $"{(horseModel.SamuraiID).ToString()} that samurai already owns a horse!";
+            string currentModel = "Horse Model";
+            string url = "horseUpdate";
+
+            //skift vindue
+            NavManager.NavigateTo($"/errorIDPage/{url}/{CurrentId}/{currentModel}/{infostring}");
+        }
+    }
+}

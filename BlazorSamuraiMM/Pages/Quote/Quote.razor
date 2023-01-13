@@ -1,0 +1,76 @@
+﻿@page "/quote"
+@inject IQuotes quote
+@inject NavigationManager NavManager
+
+<div class="topSection">
+    <h3>List of quotes</h3>
+    <button @onclick="CreateQuote">Add quote</button>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <td>Quote</td>
+            <td>Samurai name</td>
+            <td>Functions</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var quote in quoteList)
+        {
+            <tr>
+                <td>@quote.QuoteText</td>
+                @if (quote.Samurai.Deleted != 2)
+                {
+                    <td>@quote.Samurai.FirstName @quote.Samurai.LastName</td>
+                }
+                @if (quote.Samurai.Deleted == 2)
+                {
+                    <td> </td>
+                }
+                <td>
+                    <button><a href="quoteUpdate/@quote.ID">Update</a></button> |
+                    <button @onclick="()=>QuoteDelete(quote)">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    //istansiere vores List
+    List<QuoteModel> quoteList = new();
+
+    /// <summary>
+    /// overrider er så vi overskriver dataen hver gang
+    /// gør klar til udprint
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        //indsæt
+        quoteList = quote.ReadAllQuotesWithSamuraiName();
+    }
+
+    /// <summary>
+    /// vores knap til at komme hen for at indsætte i tabel
+    /// </summary>
+    private void CreateQuote()
+    {
+        //skift vindue
+        NavManager.NavigateTo("/quoteCreate");
+    }
+
+    /// <summary>
+    /// vores knap til at slette
+    /// </summary>
+    /// <param name="quoteModel"></param>
+    private void QuoteDelete(QuoteModel quoteModel)
+    {
+        //kør metode
+        quote.DeleteQuote(quoteModel.ID);
+
+        //refresh side
+        NavManager.NavigateTo(" ");
+        NavManager.NavigateTo("/quote");
+    }
+}

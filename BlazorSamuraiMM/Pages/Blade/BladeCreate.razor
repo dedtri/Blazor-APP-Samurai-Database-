@@ -1,0 +1,96 @@
+﻿@page "/bladeCreate"
+@inject IBlade blade
+@inject ISamurai samurai
+@inject NavigationManager NavManager
+
+<div class="topSection">
+    <h3>Create a blade</h3>
+    <button @onclick="Back">Back</button>
+</div>
+
+<EditForm Model="@bladeModel" OnValidSubmit="CreateBlade">
+    @*For at vores beskreder fra vores validering kan vises*@
+    <div class="errorBox">
+        <ValidationSummary />
+        @*For at vores validering på modelleren kan bruges skal vi tilføje følgende*@
+        <DataAnnotationsValidator />
+    </div>
+    <div class="row">
+        <div class="">
+            <label>Blade name: </label>
+            <input class="form-control" @bind="bladeModel.Name" />
+            <label>Blade description: </label>
+            <input class="form-control" @bind="bladeModel.Description" />
+            <label>Choose Samurai: </label>
+            @if (samuraiList.Count > 0)
+            {
+                <div>
+                <InputSelect @bind-Value="bladeModel.SamuraiID" id="categorySelect">
+                    @foreach (var item in samuraiList)
+                    {
+                        <option value="@item.ID">@item.FirstName @item.LastName</option>
+                    }
+                </InputSelect>
+                </div>
+            }
+        </div>
+
+
+        <div class="formButton">
+            <button type="submit">Confirm</button>
+        </div>
+    </div>
+
+</EditForm>
+
+
+
+@code {
+    //istansiere vores List
+    List<SamuraiModel> samuraiList = new();
+    BladeModel bladeModel = new();
+
+    /// <summary>
+    /// overrider er så vi overskriver dataen hver gang
+    /// gør klar til udprint
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        //indsæt
+        samuraiList = samurai.ReadAllAliveSamurais();
+    }
+
+    /// <summary>
+    /// vores gå tilbage knap
+    /// </summary>
+    private void Back()
+    {
+        //skift vindue
+        NavManager.NavigateTo("/blade");
+    }
+ 
+    /// <summary>
+    /// vores indsæt metode
+    /// </summary>
+    private void CreateBlade()
+    {
+        try
+        {
+            //kør metode
+            blade.InsertBlade(bladeModel);
+            //skift vindue
+            NavManager.NavigateTo("blade");
+        }
+        catch
+        {
+            //bygger vores navigateTo ordenligt op
+            string infostring = $"{(bladeModel.SamuraiID).ToString()} is not an existent Samurai ID";
+            string currentModel = "Blade Model";
+            string CurrentId = " ";
+            string url = "bladeCreate";
+
+            //skift vindue
+            NavManager.NavigateTo($"/errorIDPage/{url}/{CurrentId}/{currentModel}/{infostring}");
+        }
+    }
+}

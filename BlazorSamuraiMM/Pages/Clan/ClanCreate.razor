@@ -1,0 +1,53 @@
+﻿@page "/clanCreate"
+@inject IClan clan
+@inject NavigationManager NavManager
+
+<div class="topSection">
+    <h3>Create a clan</h3>
+    <button @onclick="Back">Back</button>
+</div>
+
+<EditForm Model="@clanModel" OnValidSubmit="CreateClan">
+    @*For at vores beskreder fra vores validering kan vises*@
+    <div class="errorBox">
+        <ValidationSummary />
+        @*For at vores validering på modelleren kan bruges skal vi tilføje følgende*@
+        <DataAnnotationsValidator />
+    </div>
+    <div class="row">
+        <div class="">
+            <label>Clan name</label>
+            <input class="form-control" @bind="clanModel.ClanName" />
+        </div>
+
+
+        <div class="formButton">
+            <button type="submit">Confirm</button>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    //istansiere vores model
+    ClanModel clanModel = new();
+
+    /// <summary>
+    /// vores tilbage knap
+    /// </summary>
+    private void Back()
+    {
+        //skift vindue
+        NavManager.NavigateTo("/clan");
+    }
+
+    /// <summary>
+    /// vores indsæt metode
+    /// </summary>
+    private void CreateClan()
+    {
+        //kør metode
+        clan.InsertClan(clanModel);
+        //skift vindue
+        NavManager.NavigateTo("clan");
+    }
+}

@@ -1,0 +1,101 @@
+﻿@page "/battleSchemaCreate"
+@inject IBattleSchema battleschema
+@inject ISamurai samurai
+@inject IBattle battle
+@inject NavigationManager NavManager
+
+<div class="topSection">
+    <h3>Create a battleschema</h3>
+    <button @onclick="Back">Back</button>
+</div>
+<EditForm Model="@battleSchemaModel" OnValidSubmit="CreateBattleSchema">
+    @*For at vores beskreder fra vores validering kan vises*@
+    <div class="errorBox">
+        <ValidationSummary />
+        @*For at vores validering på modelleren kan bruges skal vi tilføje følgende*@
+        <DataAnnotationsValidator />
+    </div>
+    <div class="row">
+        <div class="">
+            <label>SamuraiID:</label>
+            @if (samuraiList.Count() > 0)
+            {
+                <div>
+                    <InputSelect @bind-Value="battleSchemaModel.SamuraiID" id="categorySelect">
+                        @foreach (var item in samuraiList)
+                        {
+                            <option value="@item.ID">@item.FirstName @item.LastName</option>
+                        }
+                    </InputSelect>
+                </div>
+            }
+            <label>BattlesID:</label>
+            @if (battleList.Count() > 0)
+            {
+                <div>
+                    <InputSelect @bind-Value="battleSchemaModel.BattlesID" id="categorySelect">
+                        @foreach (var item in battleList)
+                        {
+                            <option value="@item.ID">@item.EventTitle</option>
+                        }
+                    </InputSelect>
+                </div>
+            }
+        </div>
+
+        <div class="formButton">
+            <button type="submit">Confirm</button>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    //istansiere vores model
+    BattleSchemaModel battleSchemaModel = new();
+    List<SamuraiModel> samuraiList = new();
+    List<BattleModel> battleList = new();
+    /// <summary>
+    /// overrider er så vi overskriver dataen hver gang
+    /// gør klar til udprint
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        battleList = battle.ReadAllAliveBattles();
+        //indsæt
+        samuraiList = samurai.ReadAllAliveSamurais();
+    }
+
+    /// <summary>
+    /// vores gå tilbage knap
+    /// </summary>
+    private void Back()
+    {
+        //skift vindue
+        NavManager.NavigateTo("/battleSchema");
+    }
+
+    /// <summary>
+    /// vores indsæt metode
+    /// </summary>
+    private void CreateBattleSchema()
+    {
+        try
+        {
+            //kør metode
+            battleschema.InsertBattleSchema(battleSchemaModel);
+            //skift vindue
+            NavManager.NavigateTo("/battleSchema");
+        }
+        catch
+        {
+            //bygger vores navigateTo ordenligt op
+            string infostring = $"'{battleSchemaModel.SamuraiID.ToString()}' or '{battleSchemaModel.BattlesID.ToString()}' is not an existent BattleID or SamuraiID";
+            string currentModel = "BattleSchema Model";
+            string CurrentId = " ";
+            string url = "battleSchemaCreate";
+
+            //skift vindue
+            NavManager.NavigateTo($"/errorIDPage/{url}/{CurrentId}/{currentModel}/{infostring}");
+        }
+    }
+}

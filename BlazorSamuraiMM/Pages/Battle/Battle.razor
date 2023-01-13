@@ -1,0 +1,77 @@
+﻿@page "/battle"
+@inject IBattle battle
+@inject NavigationManager NavManager
+
+<div class="topSection">
+    <h3>List of battles</h3>
+    <button @onclick="CreateBattle">Add battle</button>
+</div>
+<table>
+    <thead>
+        <tr>
+                    <td>Event Title</td>
+                    <td>Description</td>
+                    <td>Start Date</td>
+                    <td>End Date</td>
+                    <td>Functions</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var battle in battlesList)
+        {
+            @if (battle.Removed != 2)
+            {
+                <tr>
+                    <td>@battle.EventTitle </td>
+                    <td>@battle.Description </td>
+                    <td>@battle.EventStartDate.Year </td>
+                    <td>@battle.EventSlutDate.Year </td>
+                    <td>
+                        <button><a href="battleUpdate/@battle.ID">Update</a></button> |
+                        <button @onclick="()=>BattleDelete(battle)">Delete</button>
+                    </td>
+                </tr>
+            }
+        }
+
+    </tbody>
+</table>
+
+@code {
+    //istansiere vores Liste
+    List<BattleModel> battlesList = new();
+
+    /// <summary>
+    /// overrider er så vi overskriver dataen hver gang
+    /// gør klar til udprint
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        //Læser til udprint af gui
+        battlesList = battle.ReadAllBattles();
+    }
+
+    /// <summary>
+    /// vores knap til at komme hen for at indsætte i tabel
+    /// </summary>
+    private void CreateBattle()
+    {
+        //skift vindue
+        NavManager.NavigateTo("/battleCreate");
+    }
+
+    /// <summary>
+    /// Vores delete knap
+    /// </summary>
+    /// <param name="battleModel"></param>
+    private void BattleDelete(BattleModel battleModel)
+    {
+        //kør metode
+        battle.DeleteBattle(battleModel.ID);
+
+        //refresh side
+        NavManager.NavigateTo(" ");
+        NavManager.NavigateTo("/battle");
+    }
+
+}

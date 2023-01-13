@@ -1,0 +1,28 @@
+﻿@page "/welcome"
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+<PageTitle>Welcome</PageTitle>
+
+<div class="indexTopSection">
+    <h1>WELCOME</h1>
+    <p>PLEASE SELECT WHAT YOU WANT TO LOOK UP</p>
+</div>
+
+@*<SurveyPrompt Title="How is Blazor working for you?" />*@
+
+@code {
+
+    public string UserInfo;
+
+    /// <summary>
+    /// gemmer i local storage når welcome kører
+    /// </summary>
+    /// <param name="firstRender"></param>
+    /// <returns></returns>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        UserInfo = "UserSession: " + await localStorage.GetItemAsync<string>("UserSession") +
+        "Email : " + await localStorage.GetItemAsync<string>("Email") +
+        "Password : " + await localStorage.GetItemAsync<string>("Password");
+    }
+}

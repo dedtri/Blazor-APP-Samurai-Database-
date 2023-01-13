@@ -1,0 +1,104 @@
+﻿@page "/battleSchemaUpdate/{CurrentId}/{CurrentId2}"
+@inject IBattleSchema battleSchema
+@inject IBattle battle
+@inject ISamurai samurai
+@inject NavigationManager NavManager
+
+<div class="topSection">
+    <h3>Update battleSchema</h3>
+    <button @onclick="Back">Back</button>
+</div>
+<EditForm Model="@battleSchemaModel" OnValidSubmit="UpdateBattleSchema">
+    @*For at vores beskreder fra vores validering kan vises*@
+    <div class="errorBox">
+        <ValidationSummary />
+        @*For at vores validering på modelleren kan bruges skal vi tilføje følgende*@
+        <DataAnnotationsValidator />
+    </div>
+    <div class="row">
+        <div class="">
+            <label>SamuraiID:</label>
+            @if (samuraiList.Count() > 0)
+            {
+                <div>
+                    <InputSelect @bind-Value="battleSchemaModel.SamuraiID" id="categorySelect">
+                        @foreach (var item in samuraiList)
+                        {
+                            <option value="@item.ID">@item.FirstName @item.LastName</option>
+                        }
+                    </InputSelect>
+                </div>
+            }
+            <label>BattlesID:</label>
+            @if (battleList.Count() > 0)
+            {
+                <div>
+                    <InputSelect @bind-Value="battleSchemaModel.BattlesID" id="categorySelect">
+                        @foreach (var item in battleList)
+                        {
+                            <option value="@item.ID">@item.EventTitle</option>
+                        }
+                    </InputSelect>
+                </div>
+            }
+        </div>
+
+        <div class="formButton">
+            <button type="submit">Confirm</button>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    //parameter gør at vi kan hente dataen ned fra url som bliver parset med
+    [Parameter]
+    public string CurrentId { get; set; }
+    [Parameter]
+    public string CurrentId2 { get; set; }
+    //instansiere model
+    BattleSchemaModel battleSchemaModel = new();
+    List<SamuraiModel> samuraiList = new();
+    List<BattleModel> battleList = new();
+
+    /// <summary>
+    /// overrider er så vi overskriver dataen hver gang
+    /// gør klar til udprint
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        //indsætter i model
+        battleSchemaModel = battleSchema.ReadOneBattleSchema(Convert.ToInt32(CurrentId), Convert.ToInt32(CurrentId2));
+        battleList = battle.ReadAllAliveBattles();
+        samuraiList = samurai.ReadAllAliveSamurais();
+    }
+
+    private void Back()
+    {
+        //skift vindue
+        NavManager.NavigateTo("/battleSchema");
+    }
+
+    /// <summary>
+    /// vores update metode
+    /// </summary>
+    private void UpdateBattleSchema()
+    {
+        try
+        {
+            //kør metode
+            battleSchema.UpdateBattleSchema(battleSchemaModel, Convert.ToInt32(CurrentId), Convert.ToInt32(CurrentId2));
+            //skift vindue
+            NavManager.NavigateTo("battleSchema");
+        }
+        catch
+        {
+            //gør vores navigate to klar
+            string infostring = $"'{battleSchemaModel.SamuraiID.ToString()}' or '{battleSchemaModel.BattlesID.ToString()}' is not an existent BattleID or SamuraiID";
+            string currentModel = "BattleSchema Model";
+            string url = "battleSchemaUpdate";
+
+            //skift vindue
+            NavManager.NavigateTo($"/errorIDPage/{url}/{CurrentId}/{CurrentId2}/{currentModel}/{infostring}");
+        }
+    }
+}

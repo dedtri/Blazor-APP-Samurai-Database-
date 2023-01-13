@@ -1,0 +1,59 @@
+﻿@page "/battleCreate"
+@inject IBattle battle
+@inject NavigationManager NavManager
+
+<div class="topSection">
+    <h3>Create a battle</h3>
+    <button @onclick="Back">Back</button>
+</div>
+<EditForm Model="@battleModel" OnValidSubmit="CreateBattle">
+    @*For at vores beskreder fra vores validering kan vises*@
+    <div class="errorBox">
+        <ValidationSummary />
+        @*For at vores validering på modelleren kan bruges skal vi tilføje følgende*@
+        <DataAnnotationsValidator />
+    </div>
+    <div class="row">
+        <div class="">
+            <label>Event title</label>
+            <input class="form-control" @bind="battleModel.EventTitle" />
+            <label>Description</label>
+            <input class="form-control" @bind="battleModel.Description" />
+            <label>Event start</label>
+            <input class="form-control" @bind="battleModel.EventStartDate" />
+            <label>Event end</label>
+            <input class="form-control" @bind="battleModel.EventSlutDate" />
+        </div>
+
+
+        <div class="formButton">
+            <button type="submit">Confirm</button>
+        </div>
+    </div>
+
+</EditForm>
+
+@code {
+    //istansiere vores model
+    BattleModel battleModel = new();
+
+    /// <summary>
+    /// for vores tilbage knap
+    /// </summary>
+    private void Back()
+    {
+        //skift vindue
+        NavManager.NavigateTo("/battle");
+    }
+
+    /// <summary>
+    /// Vores insæt i tabellen metode
+    /// </summary>
+    private void CreateBattle()
+    {
+        //kør metode
+        battle.InsertBattles(battleModel);
+        //skift vindue
+        NavManager.NavigateTo("battle");
+    }
+}

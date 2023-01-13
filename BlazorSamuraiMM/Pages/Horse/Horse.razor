@@ -1,0 +1,78 @@
+﻿@page "/horse"
+@inject IHorse horse
+@inject NavigationManager NavManager
+
+<div class="topSection">
+    <h3>List of horses</h3>
+    <button @onclick="CreateHorse">Add horse</button>
+</div>
+<table>
+    <thead>
+        <tr>
+            <td>Name</td>
+            <td>Horse Race</td>
+            <td>Owner of Horse</td>
+            <td>Functions</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var horse in horsesList)
+        {
+            <tr>
+                <td>@horse.Name</td>
+                <td>@horse.HorseRace</td>
+                @if (horse.Samurai.Deleted != 2)
+                {
+                    <td>@horse.Samurai.FirstName @horse.Samurai.LastName</td>
+                }
+                @if (horse.Samurai.Deleted == 2)
+                {
+                <td> </td>
+                }
+                <td>
+                    <button><a href="horseUpdate/@horse.SamuraiID">Update</a></button> |
+                    <button @onclick="()=>HorseDelete(horse)">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    //istansiere vores List
+    List<HorseModel> horsesList = new();
+
+    /// <summary>
+    /// overrider er så vi overskriver dataen hver gang
+    /// gør klar til udprint
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        //indsæt
+        horsesList = horse.ReadAllHorsesAndSamurai();
+    }
+
+    /// <summary>
+    /// vores knap til at komme hen for at indsætte i tabel
+    /// </summary>
+    private void CreateHorse()
+    {
+        //skift vindue
+        NavManager.NavigateTo("/horseCreate");
+    }
+
+    /// <summary>
+    /// vores knap til at slette
+    /// </summary>
+    /// <param name="horseModel"></param>
+    private void HorseDelete(HorseModel horseModel)
+    {
+        //kør metode
+        horse.DeleteHorse(horseModel.SamuraiID);
+
+        //refresh side
+        NavManager.NavigateTo(" ");
+        NavManager.NavigateTo("/horse");
+    }
+
+}
